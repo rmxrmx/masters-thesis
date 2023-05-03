@@ -1,0 +1,40 @@
+mfa_russia
+mission_rf
+armscontrol_rus
+rusmission_eu
+russiaun
+rusembusa
+mission_russian
+russianembassy
+natomission_ru
+coe_russia
+
+mbuyakevich - none in final list
+
+amb_ulyanov
+snalobin - none in final list
+dmitrybalakin - none in final list
+dpol_un
+medvedevrussiae
+ggatilov
+rusembusapress - none in final list
+
+
+
+mfa_ukraine
+ukrinun
+ukraine
+defenceu
+ukrintheusa
+
+dmytrokuleba
+oleksiireznikov
+sergiykyslytsya
+denys_shmyhal
+oksanamarkarova - none in final list
+olegnikolenko_
+eminedzheppar
+zelenskyyua
+
+tassagency_en
+united24media
