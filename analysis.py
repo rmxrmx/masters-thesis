@@ -3,12 +3,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import dates
 import datetime
-
-data = pd.read_csv("csvs/formatted_data.csv")
-print(data["author.username"].unique(), data["author_id"].unique().tolist())
+import json
 
 
+# get the labels into a separate column
+raw_data = pd.read_json("final_data.json")
+data = pd.DataFrame()
+labels = []
+for i in range(len((raw_data))):
+    if raw_data["annotations"][i][0]["was_cancelled"]:
+        labels.append([0])
+    else:
+        labels.append(raw_data["annotations"][i][0]["result"][0]["value"]["choices"])
+data["labels"] = labels
 
+# get the rest of the interesting metrics
+metrics = ["created_at", "public_metrics.impression_count", "public_metrics.like_count", "author.username", "author.public_metrics.followers_count", "text_without_links", "photo_link"]
+for metric in metrics:
+    dictionary = []
+    for i in range(len((raw_data))):
+        dictionary.append(raw_data.data[i][metric])
+    data[metric.rsplit('.')[-1]] = dictionary
+
+# data.drop(["drafts", "predictions", "file_upload", "annotations", "data", "meta")
+
+relevant = []
+
+for i in range(len(data)):
+    relevant.append(("Irrelevant" or 0) not in data["labels"][i] and data["username"][i] != ("United24media" and "tassagency_en"))
+
+data["relevant"] = relevant
+
+print(sum(data.relevant))
+
+# ------- I HAVE A NICE DATAFRAME NOW :)
+
+print(data.columns)
 
 # # print(data.columns)
 # authors = data["author.username"].tolist()
