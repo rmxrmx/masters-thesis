@@ -3,9 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import dates
 import datetime
-import json
 
+data2 = pd.read_csv("csvs/formatted_data.csv")
+authors = data2["author.username"].tolist()
 
+unique, counts = np.unique(authors, return_counts=True)
+
+print(dict(zip(unique, counts)))
 # get the labels into a separate column
 raw_data = pd.read_json("final_data.json")
 data = pd.DataFrame()
@@ -25,54 +29,50 @@ for metric in metrics:
         dictionary.append(raw_data.data[i][metric])
     data[metric.rsplit('.')[-1]] = dictionary
 
-# data.drop(["drafts", "predictions", "file_upload", "annotations", "data", "meta")
-
 relevant = []
 
 for i in range(len(data)):
-    relevant.append(("Irrelevant" or 0) not in data["labels"][i] and data["username"][i] != ("United24media" and "tassagency_en"))
+    relevant.append(("Irrelevant" or 0) not in data["labels"][i])
 
 data["relevant"] = relevant
+data = data[data["username"] != "United24media"]
+data = data[data["username"] != "tassagency_en"]
 
-print(sum(data.relevant))
+# drop the only datapoint in early war
+data.drop(1894, inplace=True)
 
 # ------- I HAVE A NICE DATAFRAME NOW :)
 
-print(data.columns)
 
-# # print(data.columns)
-# authors = data["author.username"].tolist()
+print(sum(data["relevant"]))
+data = data[data["relevant"] == True]
+data.sort_values("created_at", inplace=True)
 
-# unique, counts = np.unique(authors, return_counts=True)
+authors = data["username"].tolist()
 
-# print(dict(zip(unique, counts)))
+unique, counts = np.unique(authors, return_counts=True)
 
-# # print(len(unique))
+print(dict(zip(unique, counts)))
+print(len(unique))
+plt.figure(dpi=1200)
 
-
-# data = data.sort_values(by=["created_at"], ascending=True)
-
-# print(data.head(24)["author.username"])
-
-# plt.figure(dpi=1200)
-
-# fig, ax = plt.subplots()
+fig, ax = plt.subplots()
 
 
-# datelist = data["created_at"].tolist()
-# converted_dates = list(map(datetime.datetime.strptime, datelist, len(datelist)*['%Y-%m-%dT%H:%M:%S.%fZ']))
-# x_axis = converted_dates
-# formatter = dates.DateFormatter('%Y-%m-%d')
+datelist = data["created_at"].tolist()
+converted_dates = list(map(datetime.datetime.strptime, datelist, len(datelist)*['%Y-%m-%dT%H:%M:%S.%fZ']))
+x_axis = converted_dates
+formatter = dates.DateFormatter('%Y-%m-%d')
 
-# plt.hist(x_axis, bins=100, color="#1F6ABF")
-# ax = plt.gcf().axes[0] 
-# ax.xaxis.set_major_formatter(formatter)
-# ax.set_ylabel("Number of tweets")
-# ax.set_xlabel("Date")
+plt.hist(x_axis, bins=100, color="#1F6ABF")
+ax = plt.gcf().axes[0] 
+ax.xaxis.set_major_formatter(formatter)
+ax.set_ylabel("Number of tweets")
+ax.set_xlabel("Date")
 
 
-# plt.gcf().autofmt_xdate(rotation=25)
+plt.gcf().autofmt_xdate(rotation=25)
 
-# plt.savefig("graphs/dataset_hist.pdf")
+plt.savefig("graphs/dataset_hist.pdf")
 
 # plt.show()
