@@ -24,7 +24,7 @@ authors = data2["author.username"].tolist()
 
 unique, counts = np.unique(authors, return_counts=True)
 
-print(dict(zip(unique, counts)))
+# print(dict(zip(unique, counts)))
 # get the labels into a separate column
 
 raw_data = pd.read_json("final_data.json")
@@ -97,8 +97,8 @@ authors = data["username"].tolist()
 
 unique, counts = np.unique(authors, return_counts=True)
 
-print(dict(zip(unique, counts)))
-print(len(unique))
+# print(dict(zip(unique, counts)))
+# print(len(unique))
 
 
 occurences = {}
@@ -109,7 +109,7 @@ for i in range(len(data)):
     else:
         occurences[number] = 1
 
-print(occurences)
+# print(occurences)
 
 # get all the unique labels
 label_types_all = []
@@ -139,54 +139,90 @@ for i in range(len(data)):
     for label in data_with_irrelevant.iloc[i]["labels"]:
         data_with_irrelevant.at[i, label] = 1
 
-# binary labels for each row
-for label in label_types:
-    data[label] = 0
-for i in range(len(data)):
-    for label in data.iloc[i]["labels"]:
-        data.at[i, label] = 1
+# # binary labels for each row
+# for label in label_types:
+#     data[label] = 0
+# for i in range(len(data)):
+#     for label in data.iloc[i]["labels"]:
+#         data.at[i, label] = 1
 
 ukrainian_usernames = ["MFA_Ukraine", "UKRinUN", "Ukraine", "DefenceU", "UKRintheUSA", "DmytroKuleba", "oleksiireznikov", "SergiyKyslytsya", "Denys_Shmyhal", "OlegNikolenko_", "EmineDzheppar", "ZelenskyyUa"]
 individual_usernames = ["DmytroKuleba", "oleksiireznikov", "SergiyKyslytsya", "Denys_Shmyhal", "OlegNikolenko_", "EmineDzheppar", "ZelenskyyUa", "Dpol_un", "MedvedevRussiaE"]
 
-# data_with_irrelevant["ukrainian"] = data_with_irrelevant["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
-# data_with_irrelevant["individual"] = data_with_irrelevant["username"].apply(lambda x: 1 if x in individual_usernames else 0)
+data_with_irrelevant["ukrainian"] = data_with_irrelevant["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
+data_with_irrelevant["individual"] = data_with_irrelevant["username"].apply(lambda x: 1 if x in individual_usernames else 0)
 
-data["ukrainian"] = data["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
-data["individual"] = data["username"].apply(lambda x: 1 if x in individual_usernames else 0)
 
-data_without_individuals = data[data["individual"] != 1].reset_index()
-data_without_russians = data[data["ukrainian"] == 1].reset_index()
+# Irrelevant data analysis
 
-print(len(data_without_individuals[data_without_individuals["ukrainian"] == 0]))
+irrelevant_data = data_with_irrelevant[data_with_irrelevant["relevant"] == False]
 
-metrics = td.extract_metrics(
-    text = data["text_without_links"],
-    lang = "en",
-    metrics = None
-)
+print(len(irrelevant_data))
+print(sum(irrelevant_data["ukrainian"]))
+print(sum(irrelevant_data["individual"]))
 
-metrics_df = data.join(metrics.drop(columns=["text"]))
-# # print(metrics_df.sort_values("sentence_length_mean", ascending=False).head(5).iloc[0]["text_without_links"])
+grouped_irrelevant = irrelevant_data.groupby("username")["labels"].describe().reset_index().sort_values("count", ascending=False).reset_index(drop=True)
 
-corr_results_df = pd.DataFrame()
-columns = []
-corrs = []
-p_values = []
-metrics_df.replace(np.nan, 0, inplace=True)
-for column in metrics_df.columns:
-    if column != "ukrainian" and column not in data.columns:
-        columns.append(column)
-        corr, p_value = spearmanr(metrics_df[column], metrics_df["ukrainian"])
-        corrs.append(corr)
-        p_values.append(p_value)
+other_ukraine = 0
+other_russia = 0
+for i in range(5, len(grouped_irrelevant)):
+    if grouped_irrelevant["username"][i] in ukrainian_usernames:
+        other_ukraine += grouped_irrelevant["count"][i]
+    else:
+        other_russia += grouped_irrelevant["count"][i]
 
-corr_results_df['Feature'] = columns
-corr_results_df['Correlation'] = corrs
-corr_results_df['p_value'] = p_values
+print(other_ukraine, other_russia)
 
-corr_results_df.sort_values(by="Correlation", key=abs, ascending=False, inplace=True)
-print(corr_results_df[:10])
+x = grouped_irrelevant["username"][:5].tolist() + ["Other Russian", "Ukrainian"]
+y = grouped_irrelevant["count"][:5].tolist() + [other_russia, other_ukraine]
+
+pd.set_option('display.max_colwidth', None)
+print(data_with_irrelevant.columns)
+print(data_with_irrelevant[data_with_irrelevant["username"] == "mfa_russia"][["text_without_links", "photo_link"]].head(3))
+
+# fig, ax = plt.subplots()
+# plt.bar(x, y, color=["#C02657", "#C02657", "#C02657", "#C02657", "#C02657", "#F1437D", "#1F6ABF"])
+# ax.set_ylabel("Number of irrelevant tweets")
+# ax.bar_label(ax.containers[0], label_type="edge")
+# plt.xticks(rotation=25)
+# plt.savefig("graphs/irrelevant_tweets.pdf", bbox_inches='tight')
+# # plt.show()
+
+# data["ukrainian"] = data["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
+# data["individual"] = data["username"].apply(lambda x: 1 if x in individual_usernames else 0)
+
+# data_without_individuals = data[data["individual"] != 1].reset_index()
+# data_without_russians = data[data["ukrainian"] == 1].reset_index()
+
+# print(len(data_without_individuals[data_without_individuals["ukrainian"] == 0]))
+
+# metrics = td.extract_metrics(
+#     text = data["text_without_links"],
+#     lang = "en",
+#     metrics = None
+# )
+
+# metrics_df = data.join(metrics.drop(columns=["text"]))
+# # # print(metrics_df.sort_values("sentence_length_mean", ascending=False).head(5).iloc[0]["text_without_links"])
+
+# corr_results_df = pd.DataFrame()
+# columns = []
+# corrs = []
+# p_values = []
+# metrics_df.replace(np.nan, 0, inplace=True)
+# for column in metrics_df.columns:
+#     if column != "ukrainian" and column not in data.columns:
+#         columns.append(column)
+#         corr, p_value = spearmanr(metrics_df[column], metrics_df["ukrainian"])
+#         corrs.append(corr)
+#         p_values.append(p_value)
+
+# corr_results_df['Feature'] = columns
+# corr_results_df['Correlation'] = corrs
+# corr_results_df['p_value'] = p_values
+
+# corr_results_df.sort_values(by="Correlation", key=abs, ascending=False, inplace=True)
+# print(corr_results_df[:10])
 # metrics_correlations = metrics.corrwith(metrics_df["ukrainian"], method="spearman").sort_values(key=abs, ascending=False)
 
 # print(metrics_correlations[:10])
