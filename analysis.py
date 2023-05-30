@@ -18,6 +18,11 @@ from sklearn.feature_selection import f_regression, f_classif
 from interpret.glassbox import ExplainableBoostingClassifier, ExplainableBoostingRegressor
 from interpret.blackbox import ShapKernel
 from interpret import show
+from PIL import Image
+import matplotlib.patches as mpatches
+import ptitprince as pt
+
+pd.set_option('display.max_colwidth', None)
 
 data2 = pd.read_csv("csvs/formatted_data.csv")
 authors = data2["author.username"].tolist()
@@ -140,45 +145,71 @@ for i in range(len(data)):
         data_with_irrelevant.at[i, label] = 1
 
 # # binary labels for each row
-# for label in label_types:
-#     data[label] = 0
-# for i in range(len(data)):
-#     for label in data.iloc[i]["labels"]:
-#         data.at[i, label] = 1
+for label in label_types:
+    data[label] = 0
+for i in range(len(data)):
+    for label in data.iloc[i]["labels"]:
+        data.at[i, label] = 1
 
 ukrainian_usernames = ["MFA_Ukraine", "UKRinUN", "Ukraine", "DefenceU", "UKRintheUSA", "DmytroKuleba", "oleksiireznikov", "SergiyKyslytsya", "Denys_Shmyhal", "OlegNikolenko_", "EmineDzheppar", "ZelenskyyUa"]
 individual_usernames = ["DmytroKuleba", "oleksiireznikov", "SergiyKyslytsya", "Denys_Shmyhal", "OlegNikolenko_", "EmineDzheppar", "ZelenskyyUa", "Dpol_un", "MedvedevRussiaE"]
 
-data_with_irrelevant["ukrainian"] = data_with_irrelevant["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
-data_with_irrelevant["individual"] = data_with_irrelevant["username"].apply(lambda x: 1 if x in individual_usernames else 0)
+data["ukrainian"] = data["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
+data["individual"] = data["username"].apply(lambda x: 1 if x in individual_usernames else 0)
 
 
-# Irrelevant data analysis
+# # Irrelevant data analysis
 
-irrelevant_data = data_with_irrelevant[data_with_irrelevant["relevant"] == False]
+# irrelevant_data = data_with_irrelevant[data_with_irrelevant["relevant"] == False]
 
-print(len(irrelevant_data))
-print(sum(irrelevant_data["ukrainian"]))
-print(sum(irrelevant_data["individual"]))
+# print(len(irrelevant_data))
+# print(sum(irrelevant_data["ukrainian"]))
+# print(sum(irrelevant_data["individual"]))
 
-grouped_irrelevant = irrelevant_data.groupby("username")["labels"].describe().reset_index().sort_values("count", ascending=False).reset_index(drop=True)
+# grouped_irrelevant = irrelevant_data.groupby("username")["labels"].describe().reset_index().sort_values("count", ascending=False).reset_index(drop=True)
 
-other_ukraine = 0
-other_russia = 0
-for i in range(5, len(grouped_irrelevant)):
-    if grouped_irrelevant["username"][i] in ukrainian_usernames:
-        other_ukraine += grouped_irrelevant["count"][i]
-    else:
-        other_russia += grouped_irrelevant["count"][i]
+# other_ukraine = 0
+# other_russia = 0
+# for i in range(5, len(grouped_irrelevant)):
+#     if grouped_irrelevant["username"][i] in ukrainian_usernames:
+#         other_ukraine += grouped_irrelevant["count"][i]
+#     else:
+#         other_russia += grouped_irrelevant["count"][i]
 
-print(other_ukraine, other_russia)
+# print(other_ukraine, other_russia)
 
-x = grouped_irrelevant["username"][:5].tolist() + ["Other Russian", "Ukrainian"]
-y = grouped_irrelevant["count"][:5].tolist() + [other_russia, other_ukraine]
+# x = grouped_irrelevant["username"][:5].tolist() + ["Other Russian", "Ukrainian"]
+# y = grouped_irrelevant["count"][:5].tolist() + [other_russia, other_ukraine]
 
-pd.set_option('display.max_colwidth', None)
-print(data_with_irrelevant.columns)
-print(data_with_irrelevant[data_with_irrelevant["username"] == "mfa_russia"][["text_without_links", "photo_link"]].head(3))
+# print(data_with_irrelevant.columns)
+# mfa = data_with_irrelevant[data_with_irrelevant["username"] == "mfa_russia"][["text_without_links", "photo_link"]].iloc[1]
+# un = irrelevant_data[irrelevant_data["username"] == "RussiaUN"][["text_without_links", "photo_link"]].iloc[0]
+# ukraine = irrelevant_data[irrelevant_data["ukrainian"] == 1][["text_without_links", "photo_link"]].iloc[2]
+# irrelevant_plot = [mfa, un, ukraine]
+
+# for i, e in enumerate(irrelevant_plot):
+#     print(e)
+
+# fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+# plt.subplots_adjust(bottom=0.25)
+# for i, e in enumerate(irrelevant_plot):
+#     ax[i].imshow(e[1])
+#     ax[i].annotate(e[0], (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top', wrap=True)
+#     # ax[i].annotate(e[0],  wrap=True)
+#     ax[i].tick_params(
+#         axis='both',          # changes apply to the x-axis
+#         which='both',      # both major and minor ticks are affected
+#         bottom=False,      # ticks along the bottom edge are off
+#         top=False,         # ticks along the top edge are off
+#         left=False,
+#         right=False,
+#         labelleft=False,
+#         labelbottom=False) # labels along the bottom edge are off
+# plt.show()
+
+
+
+
 
 # fig, ax = plt.subplots()
 # plt.bar(x, y, color=["#C02657", "#C02657", "#C02657", "#C02657", "#C02657", "#F1437D", "#1F6ABF"])
@@ -188,11 +219,62 @@ print(data_with_irrelevant[data_with_irrelevant["username"] == "mfa_russia"][["t
 # plt.savefig("graphs/irrelevant_tweets.pdf", bbox_inches='tight')
 # # plt.show()
 
+# mask = data.labels.apply(lambda x: 'Portrait' in x)
+# portrait_data = data[mask]
+# mask = data.labels.apply(lambda x: 'Text' in x)
+# text_data = data[mask]
+
+# print(len(portrait_data))
+# print(sum(portrait_data["ukrainian"]))
+# print(sum(portrait_data["individual"]))
+
+# print(len(text_data))
+# print(sum(text_data["ukrainian"]))
+# print(sum(text_data["individual"]))
+
+# grouped_portrait = portrait_data.groupby("username")["labels"].describe().reset_index().sort_values("count", ascending=False).reset_index(drop=True)
+# grouped_text = text_data.groupby("username")["labels"].describe().reset_index().sort_values("count", ascending=False).reset_index(drop=True)
+
+# print(grouped_portrait)
+# print(grouped_text)
+
+# x = grouped_portrait["username"][:5].tolist() + ["Other"]
+# y = grouped_portrait["count"][:5].tolist() + [sum(grouped_portrait["count"][5:])]
+# x = grouped_text["username"][:5].tolist() + ["Other"]
+# y = grouped_text["count"][:5].tolist() + [sum(grouped_text["count"][5:])]
+# fig, ax = plt.subplots()
+# plt.bar(x, y, color=["#1F6ABF", "#1F6ABF", "#C02657", "#C02657", "#1F6ABF", "#3CC130"])
+# ax.set_ylabel("Number of texts in images")
+# ax.bar_label(ax.containers[0], label_type="edge")
+# red_patch = mpatches.Patch(color='#C02657', label='Russian')
+# blue_patch = mpatches.Patch(color='#1F6ABF', label='Ukrainian')
+# green_patch = mpatches.Patch(color='#3CC130', label='Other')
+# ax.legend(handles=[red_patch, blue_patch])
+# plt.xticks(rotation=25)
+# plt.savefig("graphs/text_tweets.pdf", bbox_inches='tight')
+# plt.show()
+
+
 # data["ukrainian"] = data["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
 # data["individual"] = data["username"].apply(lambda x: 1 if x in individual_usernames else 0)
 
-# data_without_individuals = data[data["individual"] != 1].reset_index()
-# data_without_russians = data[data["ukrainian"] == 1].reset_index()
+data_without_individuals = data[data["individual"] != 1].reset_index()
+data_without_russians = data[data["ukrainian"] == 1].reset_index()
+data_without_ukrainians = data[data["ukrainian"] == 0].reset_index()
+# data_without_ukrainians["west"] = data_without_ukrainians["text_without_links"].apply(lambda x: 1 if "west" in x.lower() else 0)
+
+# print(len(data_without_ukrainians))
+# print(sum(data_without_ukrainians["text_without_links"].str.contains("West|west")))
+# print(sum(data_without_ukrainians["text_without_links"].str.contains("NATO|nato|Nato")))
+# print(sum(data_without_ukrainians["text_without_links"].str.contains("US")))
+# print(data_without_ukrainians[data_without_ukrainians["Doubt"] == 1]["text_without_links"].tolist())
+print(len(data_without_russians))
+print(sum(data_without_russians["text_without_links"].str.contains("Terrorist|terrorist")))
+print(sum(data_without_russians["text_without_links"].str.contains("Occupier|occupier")))
+print(sum(data_without_russians["text_without_links"].str.contains("Invader|invader")))
+
+# print(data_without_russians[data_without_russians["text_without_links"].str.contains("orc|Orc")]["text_without_links"])
+# print(data_without_ukrainians[data_without_ukrainians["text_without_links"].str.contains("US")]["text_without_links"])
 
 # print(len(data_without_individuals[data_without_individuals["ukrainian"] == 0]))
 
@@ -238,27 +320,27 @@ print(data_with_irrelevant[data_with_irrelevant["username"] == "mfa_russia"][["t
 # # # plt.xlabel("Number of characters")
 # # plt.savefig("graphs/individual_organization_textdescriptives.pdf")
 # plt.show()
-
-# grouping_data = data.groupby(["username"]).apply(lambda x: x[label_types].sum()/len(x)).reset_index()
-# low_tweets = ["mission_rf", "RusMission_EU", "natomission_ru", "Dpol_un", "MedvedevRussiaE", "UKRinUN", "Ukraine",
-#               "UKRintheUSA", "OlegNikolenko_", "ZelenskyyUa"]
-# grouping_data.drop(grouping_data[grouping_data.username.isin(low_tweets)].index, inplace=True)
-
-
-# grouping_data["ukrainian"] = grouping_data["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
-# grouping_data["individual"] = grouping_data["username"].apply(lambda x: 1 if x in individual_usernames else 0)
-
-# grouping_ukrainian_data = grouping_data[grouping_data["ukrainian"] == 1].reset_index()
-# # grouping_russian_data = grouping_data[grouping_data["ukrainian"] == 0]
-# # grouping_organization_data = grouping_data[grouping_data["individual"] == 0]
-
-# # # print(grouping_data)
-# # summarized = grouping_data.groupby(["ukrainian"]).describe()
+grouping_data = data.groupby(["username"]).apply(lambda x: x[label_types].sum()/len(x)).reset_index()
+low_tweets = ["mission_rf", "RusMission_EU", "natomission_ru", "Dpol_un", "MedvedevRussiaE", "UKRinUN", "Ukraine",
+              "UKRintheUSA", "OlegNikolenko_", "ZelenskyyUa"]
+grouping_data.drop(grouping_data[grouping_data.username.isin(low_tweets)].index, inplace=True)
 
 
+grouping_data["ukrainian"] = grouping_data["username"].apply(lambda x: 1 if x in ukrainian_usernames else 0)
+grouping_data["individual"] = grouping_data["username"].apply(lambda x: 1 if x in individual_usernames else 0)
+
+# # grouping_ukrainian_data = grouping_data[grouping_data["ukrainian"] == 1].reset_index()
+# # # grouping_russian_data = grouping_data[grouping_data["ukrainian"] == 0]
+# # # grouping_organization_data = grouping_data[grouping_data["individual"] == 0]
+
+# # # # print(grouping_data)
+# summarized = grouping_data.groupby(["ukrainian"]).describe().reset_index()
+# print(summarized)
 
 # for label in label_types:
-#     ttest = pg.ttest(grouping_ukrainian_data[grouping_ukrainian_data["individual"] == 0][label], grouping_ukrainian_data[grouping_ukrainian_data["individual"] == 1][label], correction=True)
+# #     ttest = pg.ttest(grouping_ukrainian_data[grouping_ukrainian_data["individual"] == 0][label], grouping_ukrainian_data[grouping_ukrainian_data["individual"] == 1][label], correction=True)
+#     ttest = pg.ttest(grouping_data[grouping_data["ukrainian"] == 0][label], grouping_data[grouping_data["ukrainian"] == 1][label], correction=True)
+# # print(ttest)
 
 #     if ttest["p-val"]["T-test"] < 0.05:
 #         print(ttest, label)
@@ -266,21 +348,20 @@ print(data_with_irrelevant[data_with_irrelevant["username"] == "mfa_russia"][["t
 # for label in label_types:
 #     print(shapiro(grouping_ukrainian_data[label]), label)
 
-# fig, ax = plt.subplots(6, 5, figsize=(10, 5), sharey=False)
-# i = 0
-# j = 0
-# for label in label_types:
-#     sns.boxplot(x="individual", y=label, data=grouping_ukrainian_data, ax=ax[i, j])
-#     if i == 5:
-#         i = 0
-#     else:
-#         i += 1
-#     if j == 4:
-#         j = 0
-#     else:
-#         j += 1
 
-# plt.show()
+grouping_data["Nationality"] = grouping_data["ukrainian"].apply(lambda x: "Russian" if x == 0 else "Ukrainian")
+fig, ax = plt.subplots()#1, 3, figsize=(15, 5), sharey=False, sharex=True)
+
+points = ["Appeal to fear"]
+
+print(grouping_data.sort_values(by=points[0]))
+
+for i, e in enumerate(points):
+    sns.boxplot(x="Nationality", y=e, data=grouping_data, palette=["#C02657", "#1F6ABF"], boxprops={'alpha': 0.4}, ax=ax, showfliers=False)
+    sns.stripplot(x="Nationality", y=e, data=grouping_data, palette=["#C02657", "#1F6ABF"], ax=ax)
+    ax.set(ylabel=e + " frequency")
+# plt.savefig("graphs/namecalling.pdf", bbox_inches='tight')
+plt.show()
 
 
 
