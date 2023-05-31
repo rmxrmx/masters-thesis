@@ -263,15 +263,15 @@ data_without_russians = data[data["ukrainian"] == 1].reset_index()
 data_without_ukrainians = data[data["ukrainian"] == 0].reset_index()
 # data_without_ukrainians["west"] = data_without_ukrainians["text_without_links"].apply(lambda x: 1 if "west" in x.lower() else 0)
 
-# print(len(data_without_ukrainians))
+print(len(data_without_ukrainians))
 # print(sum(data_without_ukrainians["text_without_links"].str.contains("West|west")))
 # print(sum(data_without_ukrainians["text_without_links"].str.contains("NATO|nato|Nato")))
-# print(sum(data_without_ukrainians["text_without_links"].str.contains("US")))
+# print(sum(data_without_ukrainians["text_without_links"].str.contains("Regime|regime")))
 # print(data_without_ukrainians[data_without_ukrainians["Doubt"] == 1]["text_without_links"].tolist())
-print(len(data_without_russians))
-print(sum(data_without_russians["text_without_links"].str.contains("Terrorist|terrorist")))
-print(sum(data_without_russians["text_without_links"].str.contains("Occupier|occupier")))
-print(sum(data_without_russians["text_without_links"].str.contains("Invader|invader")))
+# print(len(data_without_russians))
+# print(sum(data_without_russians["text_without_links"].str.contains("Terrorist|terrorist")))
+# print(sum(data_without_russians["text_without_links"].str.contains("Occupier|occupier")))
+print(sum(data_without_russians["text_without_links"].str.contains("russia")))
 
 # print(data_without_russians[data_without_russians["text_without_links"].str.contains("orc|Orc")]["text_without_links"])
 # print(data_without_ukrainians[data_without_ukrainians["text_without_links"].str.contains("US")]["text_without_links"])
@@ -356,12 +356,12 @@ points = ["Appeal to fear"]
 
 print(grouping_data.sort_values(by=points[0]))
 
-for i, e in enumerate(points):
-    sns.boxplot(x="Nationality", y=e, data=grouping_data, palette=["#C02657", "#1F6ABF"], boxprops={'alpha': 0.4}, ax=ax, showfliers=False)
-    sns.stripplot(x="Nationality", y=e, data=grouping_data, palette=["#C02657", "#1F6ABF"], ax=ax)
-    ax.set(ylabel=e + " frequency")
-# plt.savefig("graphs/namecalling.pdf", bbox_inches='tight')
-plt.show()
+# for i, e in enumerate(points):
+#     sns.boxplot(x="Nationality", y=e, data=grouping_data, palette=["#C02657", "#1F6ABF"], boxprops={'alpha': 0.4}, ax=ax, showfliers=False)
+#     sns.stripplot(x="Nationality", y=e, data=grouping_data, palette=["#C02657", "#1F6ABF"], ax=ax)
+#     ax.set(ylabel=e + " frequency")
+# plt.savefig("graphs/fear.pdf", bbox_inches='tight')
+# plt.show()
 
 
 
